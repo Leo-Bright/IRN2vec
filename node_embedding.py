@@ -12,46 +12,34 @@ import io
 embedding_layer = layers.Embedding(1000, 32)
 
 vocab_size = 10000
+
+# TODO(leo bright) how to load dataset
 imdb = keras.datasets.imdb
+# TODO(leo bright) train_data and test_data are integer index, attention to the type
 (train_data, train_labels), (test_data, test_labels) = imdb.load_data(num_words=vocab_size)
 
-# A dictionary mapping words to an integer index
-word_index = imdb.get_word_index()
+# padding data with the same length, and we don't need it now ! Pay
+# maxlen = 500
+#
+# train_data = keras.preprocessing.sequence.pad_sequences(train_data,
+#                                                         value=word_index["<PAD>"],
+#                                                         padding='post',
+#                                                         maxlen=maxlen)
+#
+# test_data = keras.preprocessing.sequence.pad_sequences(test_data,
+#                                                        value=word_index["<PAD>"],
+#                                                        padding='post',
+#                                                        maxlen=maxlen)
 
-# The first indices are reserved
-word_index = {k:(v+3) for k,v in word_index.items()}
-word_index["<PAD>"] = 0
-word_index["<START>"] = 1
-word_index["<UNK>"] = 2  # unknown
-word_index["<UNUSED>"] = 3
-
+# TODO(leo bright) A dictionary mapping words to an integer index
+word_index={}
 reverse_word_index = dict([(value, key) for (key, value) in word_index.items()])
 
-
-def decode_review(text):
-    return ' '.join([reverse_word_index.get(i, '?') for i in text])
-
-
-print(decode_review(train_data[0]))
-
-maxlen = 500
-
-train_data = keras.preprocessing.sequence.pad_sequences(train_data,
-                                                        value=word_index["<PAD>"],
-                                                        padding='post',
-                                                        maxlen=maxlen)
-
-test_data = keras.preprocessing.sequence.pad_sequences(test_data,
-                                                       value=word_index["<PAD>"],
-                                                       padding='post',
-                                                       maxlen=maxlen)
-
-
-embedding_dim=16
+embedding_dim=128
 
 model = keras.Sequential([
-  layers.Embedding(vocab_size, embedding_dim, input_length=maxlen),
-  layers.GlobalAveragePooling1D(),
+  layers.Embedding(vocab_size, embedding_dim, input_length=2),  # input_length is the node number in each samples
+  layers.GlobalAveragePooling1D(),   # TODO(leo bright) instead of compute layer which compute the mul(x, y) value.
   layers.Dense(16, activation='relu'),
   layers.Dense(1, activation='sigmoid')
 ])
