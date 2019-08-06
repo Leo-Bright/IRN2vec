@@ -6,11 +6,6 @@ from tensorflow.keras import layers
 import matplotlib.pyplot as plt
 import io
 
-# The Embedding layer takes at least two arguments:
-# the number of possible words in the vocabulary, here 1000 (1 + maximum word index),
-# and the dimensionality of the embeddings, here 32.
-embedding_layer = layers.Embedding(1000, 32)
-
 vocab_size = 10000
 
 # TODO(leo bright) how to load dataset
@@ -18,31 +13,36 @@ imdb = keras.datasets.imdb
 # TODO(leo bright) train_data and test_data are integer index, attention to the type
 (train_data, train_labels), (test_data, test_labels) = imdb.load_data(num_words=vocab_size)
 
-# padding data with the same length, and we don't need it now ! Pay
-# maxlen = 500
-#
-# train_data = keras.preprocessing.sequence.pad_sequences(train_data,
-#                                                         value=word_index["<PAD>"],
-#                                                         padding='post',
-#                                                         maxlen=maxlen)
-#
-# test_data = keras.preprocessing.sequence.pad_sequences(test_data,
-#                                                        value=word_index["<PAD>"],
-#                                                        padding='post',
-#                                                        maxlen=maxlen)
-
 # TODO(leo bright) A dictionary mapping words to an integer index
 word_index={}
 reverse_word_index = dict([(value, key) for (key, value) in word_index.items()])
 
 embedding_dim=128
 
-model = keras.Sequential([
-  layers.Embedding(vocab_size, embedding_dim, input_length=2),  # input_length is the node number in each samples
-  layers.GlobalAveragePooling1D(),   # TODO(leo bright) instead of compute layer which compute the mul(x, y) value.
-  layers.Dense(16, activation='relu'),
-  layers.Dense(1, activation='sigmoid')
-])
+
+class IRN2vec(tf.keras.Model):
+
+    def __init__(self, vocab_size, embedding_dim, input_length=2):
+        super(IRN2vec, self).__init__(name='')
+        self.embedding = layers.Embedding(vocab_size, embedding_dim, input_length=input_length),  # input_length is the node number in each samples
+        self.pooling1D = layers.GlobalAveragePooling1D(),   # TODO(leo bright) instead of compute layer which compute the mul(x, y) value.
+        self.fc1 = layers.Dense(16, activation='relu'),
+        self.fc2 = layers.Dense(1, activation='sigmoid')
+
+    def call(self, input_tensor, training=False):
+        x = self.embedding(input_tensor)
+        x = self.pooling1D(x, training=training)
+        x = self.fc1(x, training=training)
+        x = self.fc2(x, training=training)
+        return tf.nn.relu(x)
+
+
+# model = keras.Sequential([
+#   layers.Embedding(vocab_size, embedding_dim, input_length=2),  # input_length is the node number in each samples
+#   layers.GlobalAveragePooling1D(),   # TODO(leo bright) instead of compute layer which compute the mul(x, y) value.
+#   layers.Dense(16, activation='relu'),
+#   layers.Dense(1, activation='sigmoid')
+# ])
 
 model.summary()
 
