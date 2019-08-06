@@ -20,6 +20,9 @@ parser.add_argument('--output', type = str)
 parser.add_argument('--negative', type = int)
 parser.add_argument('--threads', type = int, default=1)
 
+# test args
+parser.add_argument('--test_file', type = str)
+
 # log file name
 parser.add_argument('--log_file', type = str, default='./train_log.log')
 
@@ -29,18 +32,17 @@ args = parser.parse_args()
 def train(model, elogger, train_set, eval_set):
     pass
     # record the experiment setting
-    # elogger.log(str(model))
-    # elogger.log(str(args._get_kwargs()))
-    #
-    # model.train()
-    #
-    # if torch.cuda.is_available():
-    #     model.cuda()
-    #
-    # optimizer = optim.Adam(model.parameters(), lr = 1e-3)
-    #
-    # for epoch in xrange(args.epochs):
-    #     print('Training on epoch {}'.format(epoch))
+    elogger.log(str(model))
+    elogger.log(str(args._get_kwargs()))
+
+    model.summary()
+
+    model.compile(optimizer='adam',
+                  loss='binary_crossentropy',
+                  metrics=['accuracy'])
+
+    for epoch in xrange(args.epochs):
+        print('Training on epoch {}'.format(epoch))
     #     for input_file in train_set:
     #         print('Train on file {}'.format(input_file))
     #
@@ -143,10 +145,8 @@ def run():
 
     elif args.task == 'test':
         # load the saved weight file
-        model.load_state_dict(torch.load(args.weight_file))
-        if torch.cuda.is_available():
-            model.cuda()
-        evaluate(model, elogger, config['test_set'], save_result = True)
+        model.load_weights(args.weight_file)
+        evaluate(model, elogger, args.test_file, save_result = True)
 
 
 if __name__ == '__main__':

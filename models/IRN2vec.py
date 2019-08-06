@@ -44,11 +44,11 @@ class IRN2vec(tf.keras.Model):
 #   layers.Dense(1, activation='sigmoid')
 # ])
 
-model.summary()
-
-model.compile(optimizer='adam',
-              loss='binary_crossentropy',
-              metrics=['accuracy'])
+# model.summary()
+#
+# model.compile(optimizer='adam',
+#               loss='binary_crossentropy',
+#               metrics=['accuracy'])
 
 history = model.fit(
     train_data,
