@@ -8,32 +8,40 @@ DIRECTORY_URL = 'datasets'
 FILE_NAME = 'sanfrancisco_random_1w.walks'
 
 
-def labelor(example, sep, index):
-    new_example = []
+def splitor(example, sep, index):
+    # new_example = []
     items = example.split(sep)
-    for i in range(len(items)):
-        if i % index == 0:
-            new_example.append(items[i])
+    # for i in range(len(items)):
+    #     if i % index == 0:
+    #         new_example.append(items[i])
+    new_example = items[::2]
 
-    return format(' ').join(new_example), tf.cast(label, tf.int64)
+    return format(' ').join(new_example)
+
+
+def generate_type_samples(example):
+    type_samples = []
+
+
 
 
 labeled_data_sets = []
 lines_dataset = tf.data.TextLineDataset(os.path.join(DIRECTORY_URL, FILE_NAME))
-all_split_dataset = lines_dataset.map(lambda ex: labelor(ex, ' ', 2))
+split_lines_dataset = lines_dataset.map(lambda ex: splitor(ex, ' '))
+
 
 BUFFER_SIZE = 50000
 BATCH_SIZE = 64
 TAKE_SIZE = 5000
 
-all_split_shuffled_data = all_split_dataset.shuffle(
+shuffled_split_lines_data = split_lines_dataset.shuffle(
     BUFFER_SIZE, reshuffle_each_iteration=False)
 
 
 tokenizer = tfds.features.text.Tokenizer()
 
 vocabulary_set = set()
-for text_tensor, _ in all_split_shuffled_data:
+for text_tensor in shuffled_split_lines_data:
     some_tokens = tokenizer.tokenize(text_tensor.numpy())
     vocabulary_set.update(some_tokens)
 
