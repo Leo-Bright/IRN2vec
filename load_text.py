@@ -8,12 +8,13 @@ DIRECTORY_URL = 'datasets'
 FILE_NAME = 'sanfrancisco_random_1w.walks'
 
 
-def splitor(example, sep, index):
+def splitor(example, sep):
     # new_example = []
-    items = example.split(sep)
+    # items = example.split(sep)
     # for i in range(len(items)):
     #     if i % index == 0:
     #         new_example.append(items[i])
+    items = example.numpy()
     new_example = items[::2]
 
     return format(' ').join(new_example)
@@ -27,6 +28,7 @@ def generate_type_samples(example):
 
 labeled_data_sets = []
 lines_dataset = tf.data.TextLineDataset(os.path.join(DIRECTORY_URL, FILE_NAME))
+print(lines_dataset[0])
 split_lines_dataset = lines_dataset.map(lambda ex: splitor(ex, ' '))
 
 
@@ -55,11 +57,11 @@ def encode(text_tensor, label):
     return encoded_text, label
 
 
-def encode_map_fn(text, label):
-    return tf.py_function(encode, inp=[text, label], Tout=(tf.int64, tf.int64))
+def encode_map_fn(text):
+    return tf.py_function(encode, inp=text, Tout=tf.int64)
 
 
-all_encoded_data = all_split_shuffled_data.map(encode_map_fn)
+all_encoded_data = shuffled_split_lines_data.map(encode_map_fn)
 
 train_data = all_encoded_data.skip(TAKE_SIZE).shuffle(BUFFER_SIZE)
 train_data = train_data.padded_batch(BATCH_SIZE, padded_shapes=([-1],[]))
@@ -67,9 +69,9 @@ train_data = train_data.padded_batch(BATCH_SIZE, padded_shapes=([-1],[]))
 test_data = all_encoded_data.take(TAKE_SIZE)
 test_data = test_data.padded_batch(BATCH_SIZE, padded_shapes=([-1],[]))
 
-# sample_text, sample_labels = next(iter(test_data))
-# #
-# # sample_text[0], sample_labels[0]
+sample_text, sample_labels = next(iter(test_data))
+
+print(sample_text[0], sample_labels[0])
 
 vocab_size += 1
 
